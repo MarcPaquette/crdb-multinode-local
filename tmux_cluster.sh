@@ -41,7 +41,7 @@ for i in $(seq 2 "$NODES"); do
     --listen-addr=localhost:$sql_port \
     --http-addr=localhost:$http_port \
     --join=$join
-
+  tmux select-layout -t "crdb-cluster" even-vertical
 done
 
 tmux select-layout -t "crdb-cluster" even-vertical
@@ -50,4 +50,9 @@ tmux split-window -hf -p 80 "sleep 3 && cockroach init --insecure --host=localho
 tmux split-window -v -p 75
 
 sleep 5
-open "http://localhost:8080"
+
+if command -v open &>/dev/null; then
+  open "http://localhost:8080"
+elif command -v xdg-open &>/dev/null; then
+  xdg-open "http://localhost:8080"
+fi
