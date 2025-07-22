@@ -5,8 +5,10 @@
 set -exuo pipefail
 
 NODES="${1:-3}"                 # default: 3 nodes
-BASE_SQL_PORT=26257
-BASE_HTTP_PORT=8080
+BASE_SQL_PORT="${BASE_SQL_PORT:-26257}"
+BASE_HTTP_PORT="${BASE_HTTP_PORT:-8080}"
+STORE_DIRECTORY="${STORE_DIRECTORY:-temp_store}"
+TMUX_WINDOW="${TMUX_WINDOW:-crdb-cluster}"
 
 # Ensure we're inside a tmux session
 if [[ -z "${TMUX:-}" ]]; then
@@ -23,9 +25,9 @@ join=${join%,}  # remove trailing comma
   
 
 # Make the first pane the base (node 1)
-tmux new-window -n crdb-cluster cockroach start \
+tmux new-window -n $TMUX_WINDOW cockroach start \
   --insecure \
-  --store=temp_store/node1 \
+  --store=$STORE_DIRECTORY/node1 \
   --listen-addr=localhost:$BASE_SQL_PORT \
   --http-addr=localhost:$BASE_HTTP_PORT \
   --join=$join
@@ -37,14 +39,14 @@ for i in $(seq 2 "$NODES"); do
   store="node$i"
   tmux split-window -v cockroach start \
     --insecure \
-    --store=temp_store/$store \
+    --store=$STORE_DIRECTORY/$store \
     --listen-addr=localhost:$sql_port \
     --http-addr=localhost:$http_port \
     --join=$join
-  tmux select-layout -t "crdb-cluster" even-vertical
+  tmux select-layout -t "$TMUX_WINDOW" even-vertical
 done
 
-tmux select-layout -t "crdb-cluster" even-vertical
+tmux select-layout -t "$TMUX_WINDOW" even-vertical
 tmux split-window -hf -p 80 "sleep 3 && cockroach init --insecure --host=localhost:$BASE_SQL_PORT && \
    cockroach sql --insecure --host=localhost:$BASE_SQL_PORT"
 tmux split-window -v -p 75
@@ -52,7 +54,7 @@ tmux split-window -v -p 75
 sleep 5
 
 if command -v open &>/dev/null; then
-  open "http://localhost:8080"
+  open "http://localhost:$BASE_HTTP_PORT"
 elif command -v xdg-open &>/dev/null; then
-  xdg-open "http://localhost:8080"
+  xdg-open "http://localhost:$BASE_HTTP_PORT"
 fi
