@@ -10,9 +10,8 @@ BASE_HTTP_PORT="${BASE_HTTP_PORT:-8080}"
 STORE_DIRECTORY="${STORE_DIRECTORY:-temp_store}"
 TMUX_WINDOW="${TMUX_WINDOW:-crdb-cluster}"
 
-
 # define a comma-separated list of regions (no spaces!) and split into an array
-REGIONS_CSV="${REGIONS:-us-east,us-west,us-central}"
+REGIONS_CSV="${REGIONS_CSV:-us-east,us-west,us-central}"
 IFS=',' read -r -a REGIONS <<< "$REGIONS_CSV"
 
 # Ensure we're inside a tmux session
