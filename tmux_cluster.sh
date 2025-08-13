@@ -78,7 +78,7 @@ done
 
 tmux select-layout -t "$TMUX_WINDOW" even-vertical
 
-tmux split-window -hf -p 80 "sleep 3 && cockroach init --insecure --host=localhost:$BASE_SQL_PORT && cockroach sql --insecure --host=localhost:$BASE_SQL_PORT"
+tmux split-window -hf -p 80 "sleep 5 && cockroach init --insecure --host=localhost:$BASE_SQL_PORT ||  cockroach sql --insecure --host=localhost:$BASE_SQL_PORT"
 
 tmux split-window -v -p 75
 
