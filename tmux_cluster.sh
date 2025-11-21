@@ -21,6 +21,11 @@ TMUX_WINDOW="${TMUX_WINDOW:-crdb-cluster}"
 REGIONS_CSV="${REGIONS_CSV:-us-east-1,us-west-1,eu-west-1}"
 OLD_IFS=$IFS; IFS=',' read -r -a REGIONS <<< "$REGIONS_CSV"; IFS=$OLD_IFS
 
+if (( ${#REGIONS[@]} == 0 )); then
+  echo "ERROR: REGIONS_CSV must contain at least one region" >&2
+  exit 1
+fi
+
 if [[ -z "${TMUX:-}" ]]; then
   echo "ERROR: This script must be run inside an existing tmux session." >&2
   exit 1
@@ -103,11 +108,11 @@ done
 tmux select-layout -t "$TMUX_WINDOW" even-vertical
 
 # Wait for cluster to be intialized before proceeding
+attempts=0
 until cockroach init --insecure --host=localhost:"$BASE_SQL_PORT"; do
 ((attempts++))
       if (( attempts > 30 )); then
         echo 'ERROR: cockroach init timed out after 30 attempts' >&2
-        read -rp 'Press enter to close...'
         exit 1
       fi
       sleep 1
