@@ -17,15 +17,18 @@ What it does
 
 Usage
 - Inside an existing tmux session, run:
-  ./tmux_cluster.sh [NUM_NODES]
+  ./tmux_cluster.sh [OPTIONS] [NUM_NODES]
   - NUM_NODES defaults to 3 and must be a positive integer
+  - Options:
+    -h, --help    Show help message and exit
 
 Configuration via environment variables
+- DEBUG: set to 1 to enable debug output (default: unset)
 - TMUX_WINDOW: tmux window name (default: crdb-cluster)
 - BASE_SQL_PORT: first SQL port (default: 26257). Subsequent nodes use +1, +2, ...
 - BASE_HTTP_PORT: first HTTP port (default: 8080). Subsequent nodes use +1, +2, ...
 - STORE_DIRECTORY: base directory for node stores (default: temp_store)
-- REGIONS_CSV: comma-separated regions cycled across nodes (default: us-east,us-west,us-central)
+- REGIONS_CSV: comma-separated regions cycled across nodes (default: us-east-1,us-west-1,eu-west-1)
 - OPEN_UI: set to 0 to skip auto-opening the Admin UI (default: 1)
 
 Examples
