@@ -8,6 +8,41 @@ if [[ "${DEBUG:-}" == "1" ]]; then
   set -x
 fi
 
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [OPTIONS] [NUM_NODES]
+
+Start a local multi-node CockroachDB cluster in tmux.
+
+Arguments:
+  NUM_NODES          Number of nodes to start (default: 3)
+
+Options:
+  -h, --help         Show this help message and exit
+
+Environment Variables:
+  DEBUG              Set to 1 to enable debug output (default: unset)
+  BASE_SQL_PORT      Starting SQL port (default: 26257)
+  BASE_HTTP_PORT     Starting HTTP port (default: 8080)
+  STORE_DIRECTORY    Directory for node data (default: temp_store)
+  TMUX_WINDOW        Name of tmux window (default: crdb-cluster)
+  REGIONS_CSV        Comma-separated list of regions (default: us-east-1,us-west-1,eu-west-1)
+  OPEN_UI            Set to 0 to disable auto-opening the UI (default: 1)
+
+Examples:
+  ${0##*/}              Start a 3-node cluster with defaults
+  ${0##*/} 5            Start a 5-node cluster
+  BASE_SQL_PORT=36257 ${0##*/}   Start cluster on different ports
+
+Note: This script must be run inside an existing tmux session.
+EOF
+}
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
 command -v tmux >/dev/null 2>&1 || { echo "ERROR: tmux not found" >&2; exit 1; }
 command -v cockroach >/dev/null 2>&1 || { echo "ERROR: cockroach not found" >&2; exit 1; }
 command -v curl >/dev/null 2>&1 || { echo "ERROR: curl not found" >&2; exit 1; }
@@ -107,15 +142,15 @@ done
 
 tmux select-layout -t "$TMUX_WINDOW" even-vertical
 
-# Wait for cluster to be intialized before proceeding
+# Wait for cluster to be initialized before proceeding
 attempts=0
 until cockroach init --insecure --host=localhost:"$BASE_SQL_PORT"; do
-((attempts++))
-      if (( attempts > 30 )); then
-        echo 'ERROR: cockroach init timed out after 30 attempts' >&2
-        exit 1
-      fi
-      sleep 1
+  ((attempts++))
+  if (( attempts > 30 )); then
+    echo 'ERROR: cockroach init timed out after 30 attempts' >&2
+    exit 1
+  fi
+  sleep 1
 done
 
 tmux split-window -hf -p 75 "cockroach sql --insecure --host=localhost:$BASE_SQL_PORT"
