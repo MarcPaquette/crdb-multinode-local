@@ -144,7 +144,7 @@ tmux select-layout -t "$TMUX_WINDOW" even-vertical
 
 # Wait for cluster to be initialized before proceeding
 attempts=0
-until cockroach init --insecure --host=localhost:"$BASE_SQL_PORT"; do
+until cockroach init --insecure --host=localhost:"$BASE_SQL_PORT" ||  wait_for_http "http://localhost:$BASE_HTTP_PORT" 30 1; do
   ((attempts++))
   if (( attempts > 30 )); then
     echo 'ERROR: cockroach init timed out after 30 attempts' >&2
